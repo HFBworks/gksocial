@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: glasskom_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-glasskom}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - glasskom-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-glasskom}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: glasskom_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-glasskom}
+      DB_PORT: 5432
+      JWT_SECRET: ${JWT_SECRET:-glasskom_secret_key_change_in_production}
+      API_KEY: ${API_KEY}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost}
+    volumes:
+      - ../uploads:/app/uploads
+      - ../logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - glasskom-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (Production Build served by Nginx)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+    container_name: glasskom_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/glasskom.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../nginx/ssl:/etc/nginx/ssl:ro
+      - ../uploads:/var/www/uploads:ro
+    depends_on:
+      - api
+    networks:
+      - glasskom-network
+
+  # Redis for session caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: glasskom_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - glasskom-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  glasskom-network:
+    driver: bridge

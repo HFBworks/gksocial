@@ -1,0 +1,16 @@
+# Frontend Development Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+EXPOSE 5173
+
+# Use Vite dev server with host flag for Docker
+CMD ["npm", "run", "dev", "--", "--host"]

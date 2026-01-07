@@ -1,0 +1,89 @@
+version: '3.8'
+
+# Development Docker Compose - Use with: docker-compose -f docker-compose.dev.yml up
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: glasskom_db_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: glasskom_dev
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - glasskom-dev-network
+
+  # Redis for development
+  redis:
+    image: redis:7-alpine
+    container_name: glasskom_redis_dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - glasskom-dev-network
+
+  # Backend API (development mode with hot reload)
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.dev
+    container_name: glasskom_api_dev
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_USER: postgres
+      DB_PASSWORD: devpassword
+      DB_HOST: db
+      DB_NAME: glasskom_dev
+      DB_PORT: 5432
+      JWT_SECRET: dev_secret_key
+      CLIENT_URL: http://localhost:5173
+    volumes:
+      - ../backend/src:/app/src:ro
+      - ../uploads:/app/uploads
+      - ../logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - glasskom-dev-network
+
+  # Frontend (development mode with hot reload)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    container_name: glasskom_frontend_dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3001
+    volumes:
+      - ../frontend/src:/app/src
+      - ../frontend/public:/app/public
+      - ../frontend/index.html:/app/index.html
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - glasskom-dev-network
+
+volumes:
+  pgdata_dev:
+    driver: local
+
+networks:
+  glasskom-dev-network:
+    driver: bridge

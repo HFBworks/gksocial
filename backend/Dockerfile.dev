@@ -1,0 +1,19 @@
+# Backend Development Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Create uploads and logs directories
+RUN mkdir -p uploads logs
+
+EXPOSE 3001
+
+# Use nodemon for hot reload
+CMD ["npm", "run", "dev"]
