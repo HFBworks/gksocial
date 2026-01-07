@@ -2,9 +2,46 @@
 
 <div align="center">
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+
 </div>
 
-A modern social networking platform built with React, Node.js, and PostgreSQL.
+A modern, full-stack social networking platform built with React, Node.js, and PostgreSQL. Features real-time messaging, AI-powered assistance, PWA support, and comprehensive Docker deployment.
+
+## ✨ Key Features
+
+- 🔐 **Authentication**: Firebase Auth with PostgreSQL sync
+- 💬 **Real-time Messaging**: Socket.IO for live updates and chat
+- 🤖 **AI Assistant**: Gemini-powered intelligent chat assistant
+- 📱 **PWA Support**: Installable progressive web app
+- 👥 **Communities**: Create and join interest-based communities
+- 📸 **Media Sharing**: Image uploads with optimization
+- 🐳 **Docker Ready**: Complete development and production setup
+- 🔒 **Secure**: JWT auth, rate limiting, and security headers
+
+## 🚀 Quick Start with Docker
+
+```bash
+# Clone the repository
+git clone https://github.com/HFBworks/gksocial.git
+cd gksocial
+
+# Start development environment
+cd docker
+docker-compose -f docker-compose.dev.yml up
+
+# Access the app
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:3001
+```
+
+See [DOCKER_DEV_GUIDE.md](DOCKER_DEV_GUIDE.md) for detailed Docker instructions.
 
 ## 📁 Project Structure
 

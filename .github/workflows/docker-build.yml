@@ -1,0 +1,33 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build backend image
+      run: |
+        cd backend
+        docker build -f Dockerfile.dev -t gksocial-backend:test .
+        
+    - name: Build frontend image
+      run: |
+        cd frontend
+        docker build -f Dockerfile.dev -t gksocial-frontend:test .
+        
+    - name: Test docker-compose
+      run: |
+        cd docker
+        docker-compose -f docker-compose.dev.yml config
