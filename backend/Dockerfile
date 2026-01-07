@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Production image
 FROM base AS runner
